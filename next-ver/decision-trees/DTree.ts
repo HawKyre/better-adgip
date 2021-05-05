@@ -31,6 +31,10 @@ export class DTree {
         }
     }
 
+    updateNode(nodeID: number, data: object): void {
+        this.parentNode.updateChild(nodeID, data);
+    }
+
     switchNodeType(nodeID: number, nodeType: string): void {
         this.parentNode.switchType(nodeID, nodeType);
         this.insertNode(nodeID, new ResultNode(''));
@@ -143,6 +147,19 @@ export class DNode implements IDNode {
             let found = false;
             this.children.forEach(
                 (n) => (found = found || n.removeChild(nodeID))
+            );
+            return found;
+        }
+    }
+
+    updateChild(nodeID: number, data: object): boolean {
+        if (this.nodeID === nodeID) {
+            Object.assign(this, this, data);
+            return true;
+        } else {
+            let found = false;
+            this.children.forEach(
+                (n) => (found = found || n.updateChild(nodeID, data))
             );
             return found;
         }

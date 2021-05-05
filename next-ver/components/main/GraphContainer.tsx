@@ -4,26 +4,27 @@ import {
     getBigExampleTree,
     getExampleTree,
 } from '../../decision-trees/DTree';
-import { ContextElement } from '../../types/props';
-import { IDNode, IDNodeData } from '../../types/types';
+import {
+    ContextData,
+    GraphContainerProps,
+    IDNodeData,
+    PopupData,
+} from '../../types/types';
 import {
     decisionNodeContextMenu,
     resultNodeContextMenu,
 } from '../../util/contextMenus';
 import NodeContextMenu from './NodeContextMenu';
 import TreeGraph from './TreeGraph';
-
-interface GraphContainerProps {}
-
-interface ContextData {
-    items: ContextElement[];
-    visible: boolean;
-    xPos: number;
-    yPos: number;
-}
+import ValueUpdate from './UpdatePopup';
 
 const GraphContainer: React.FC<GraphContainerProps> = () => {
     const [tree, setTree] = useState<DTree>(getExampleTree());
+    const [popupData, setPopupData] = useState<PopupData>({
+        visible: false,
+        text: '',
+        onSetValue: () => { }
+    });
 
     const [contextData, setContextData] = useState<ContextData>({
         items: [],
@@ -40,17 +41,27 @@ const GraphContainer: React.FC<GraphContainerProps> = () => {
 
         if (data.type === 'RES') {
             setContextData({
-                items: resultNodeContextMenu(data, setTree),
+                items: resultNodeContextMenu(
+                    data,
+                    setTree,
+                    popupData,
+                    setPopupData
+                ),
                 visible: true,
                 xPos: event.x + window.scrollX,
                 yPos: event.y + window.scrollY,
             });
         } else if (data.type === 'DEC' || data.type === 'RND') {
             setContextData({
-                items: decisionNodeContextMenu(data, setTree),
+                items: decisionNodeContextMenu(
+                    data,
+                    setTree,
+                    popupData,
+                    setPopupData
+                ),
                 visible: true,
-                xPos: event.x,
-                yPos: event.y,
+                xPos: event.x + window.scrollX,
+                yPos: event.y + window.scrollY,
             });
         }
     };
@@ -80,6 +91,7 @@ const GraphContainer: React.FC<GraphContainerProps> = () => {
                 xPos={contextData.xPos}
                 yPos={contextData.yPos}
             />
+            <ValueUpdate popupData={popupData} setPopupData={setPopupData} />
         </div>
     );
 };

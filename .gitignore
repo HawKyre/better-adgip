@@ -1,9 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/next-ver/node_modules
+next-ver/node_modules
 /next-ver/.pnp
-/next-ver.pnp.js
+/next-ver/.pnp.js
 
 # testing
 /next-ver/coverage

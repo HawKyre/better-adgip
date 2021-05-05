@@ -177,7 +177,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
             d3.select(svgRef.current).attr('viewBox', [
                 0,
                 0,
-                Math.max(width, bbox.width + 100),
+                Math.max(width - 10, bbox.width + 100),
                 Math.max(height, bbox.height + 200),
             ]);
             console.log(bbox);

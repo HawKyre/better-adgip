@@ -1,4 +1,5 @@
 import { DNode } from '../decision-trees/DTree';
+import { ContextElement } from './props';
 
 export interface IDNodeData extends IDNode {
     type: string;
@@ -45,4 +46,19 @@ export interface IDNode {
     calculate: () => number;
 
     getChildrenData: (isParentRandom: boolean) => object;
+}
+
+export interface GraphContainerProps {}
+
+export interface ContextData {
+    items: ContextElement[];
+    visible: boolean;
+    xPos: number;
+    yPos: number;
+}
+
+export interface PopupData {
+    visible: boolean;
+    text: string;
+    onSetValue: (n: any) => void;
 }
