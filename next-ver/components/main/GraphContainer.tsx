@@ -19,12 +19,19 @@ import TreeGraph from './TreeGraph';
 import ValueUpdate from './UpdatePopup';
 
 const GraphContainer: React.FC<GraphContainerProps> = () => {
+    const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
     const [tree, setTree] = useState<DTree>(getExampleTree());
     const [popupData, setPopupData] = useState<PopupData>({
         visible: false,
         text: '',
-        onSetValue: () => { }
+        onSetValue: () => {},
     });
+
+    useEffect(() => {
+        if (popupData.visible) {
+            inputRef.current.focus();
+        }
+    }, [popupData.visible]);
 
     const [contextData, setContextData] = useState<ContextData>({
         items: [],
@@ -91,7 +98,11 @@ const GraphContainer: React.FC<GraphContainerProps> = () => {
                 xPos={contextData.xPos}
                 yPos={contextData.yPos}
             />
-            <ValueUpdate popupData={popupData} setPopupData={setPopupData} />
+            <ValueUpdate
+                popupData={popupData}
+                setPopupData={setPopupData}
+                inputRef={inputRef}
+            />
         </div>
     );
 };

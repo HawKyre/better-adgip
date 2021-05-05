@@ -13,3 +13,8 @@ body::-webkit-scrollbar {
     background: transparent;
     width: 0;
 }
+
+button:focus,
+input:focus {
+    outline: none;
+}

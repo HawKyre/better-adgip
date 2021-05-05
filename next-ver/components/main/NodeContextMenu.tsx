@@ -16,7 +16,7 @@ const NodeContextMenu: React.FC<ContextProps> = ({
             {visible &&
                 items.map((i) => (
                     <button
-                        className="p-1 pl-2 text-left hover:bg-gray-100 focus:outline-none"
+                        className="p-1 pl-2 text-left hover:bg-gray-100"
                         key={i.title}
                         onClick={i.onClick}
                     >
