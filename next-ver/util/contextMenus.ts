@@ -9,7 +9,15 @@ const probabilityOnClick = (
     const onSetValue = (n: string) => {
         if (!n || n === '') return;
 
-        let probValue = parseFloat(n);
+        let probValue = -1;
+
+        if (n.endsWith('%')) {
+            n.replace('%', '');
+            probValue = parseFloat(n) / 100;
+        } else {
+            probValue = parseFloat(n);
+        }
+
         if (!probValue || probValue < 0 || probValue > 1) return;
 
         setTree((t) => {

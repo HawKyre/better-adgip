@@ -160,7 +160,9 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
         nodeValue
             .filter(
                 (d: NodeData) =>
-                    d.data.value !== undefined && d.data.label !== 'root'
+                    d.data.value !== undefined &&
+                    d.data.value !== 0 &&
+                    d.data.label !== 'root'
             )
             .append('text')
             .text((d: NodeData) => `Valor: ${d.data.value}`)
@@ -178,7 +180,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
                 0,
                 0,
                 Math.max(width - 10, bbox.width + 100),
-                Math.max(height, bbox.height + 200),
+                Math.max(height, bbox.height + 280),
             ]);
             console.log(bbox);
 

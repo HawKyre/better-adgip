@@ -8,7 +8,7 @@ const NodeContextMenu: React.FC<ContextProps> = ({
 }) => {
     return (
         <div
-            className={`absolute bg-white w-80 border border-gray-300 filter drop-shadow flex flex-col ${
+            className={`absolute bg-white w-80 border border-gray-300 filter drop-shadow flex flex-col z-60 ${
                 !visible && 'hidden'
             }`}
             style={{ top: yPos, left: xPos }}
