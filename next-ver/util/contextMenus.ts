@@ -108,8 +108,6 @@ const eraseOnClick = (
             t
         );
 
-        console.log(newTree);
-
         newTree.deleteNode(data.nodeID);
         return newTree;
     });
@@ -124,8 +122,6 @@ const addBranchTab = (
             Object.create(Object.getPrototypeOf(t)),
             t
         );
-
-        console.log(newTree);
 
         newTree.insertNode(data.nodeID, new ResultNode(''));
         return newTree;
@@ -142,8 +138,6 @@ const createRandomOnClick = (
             t
         );
 
-        console.log(newTree);
-
         newTree.switchNodeType(data.nodeID, 'RND');
         return newTree;
     });
@@ -158,8 +152,6 @@ const createDecisionOnClick = (
             Object.create(Object.getPrototypeOf(t)),
             t
         );
-
-        console.log(t);
 
         newTree.switchNodeType(data.nodeID, 'DEC');
         return newTree;
@@ -194,8 +186,6 @@ export const resultNodeContextMenu = (
             onClick: () => eraseOnClick(setTree, data),
         },
     ];
-
-    console.log(data);
 
     if (data.isParentRandomNode) {
         menu.splice(3, 0, {

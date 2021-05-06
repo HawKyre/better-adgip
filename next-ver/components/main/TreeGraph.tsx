@@ -11,14 +11,18 @@ import { NodeData } from '../../types/types';
 interface TreeGraphProps {
     tree: DTree;
     showNodeContextMenu: any;
+    isOptimalTree: boolean;
 }
 
-const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
+const TreeGraph: React.FC<TreeGraphProps> = ({
+    tree,
+    showNodeContextMenu,
+    isOptimalTree,
+}) => {
     const divRef = useRef();
     const svgRef = useRef();
     useEffect(() => {
-        console.log('Changing tree');
-        console.log(tree);
+        // console.log(tree.getDataTree());
 
         if (svgRef && svgRef.current) {
             svgRef.current.innerHTML = '';
@@ -26,7 +30,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
 
         const width = window.innerWidth;
         const height = window.innerHeight;
-        const root_dx = 80;
+        const root_dx = 95;
         const root_dy = 400;
 
         let d3tree = (data: object) => {
@@ -36,7 +40,9 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
             return d3.tree().nodeSize([root.dx, root.dy])(root);
         };
 
-        const root = d3tree(tree.parentNode.getChildrenData());
+        const root = d3tree(
+            isOptimalTree ? tree.getOptimalTree() : tree.getDataTree()
+        ) as NodeData;
 
         let x0 = Infinity;
         let x1 = -x0;
@@ -61,9 +67,8 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
         const link = g
             .append('g')
             .attr('fill', 'none')
-            .attr('stroke', '#555')
             .attr('stroke-opacity', 0.4)
-            .attr('stroke-width', 1.5)
+            .attr('stroke-width', 2)
             .selectAll('path')
             .data(root.links())
             .join('path')
@@ -77,6 +82,15 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
                     (1 - diagonalPercent) *
                     widthScale
                 }`;
+            })
+            .attr('class', (d) => {
+                if (!isOptimalTree) {
+                    return 'stroke-current text-gray-800';
+                } else if (d.target.data.isBranchGood) {
+                    return 'stroke-current text-black';
+                } else {
+                    return 'stroke-current text-gray-200';
+                }
             });
         // .attr("d", d3.linkHorizontal()
         //     .x(d => d.y * widthScale)
@@ -96,7 +110,6 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
             .on('contextmenu', showNodeContextMenu);
 
         const scale = 3;
-        // console.log(node.append('path').attr('d', d3.symbol()));
         node.append('path')
             .attr(
                 'd',
@@ -141,14 +154,12 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
         // const textBBox = nodeText._parents.map((x) => x.getBBox());
         // const textCTM = nodeText._groups[0].map((x) => x.getCTM());
 
-        console.log(node);
-
         let nodeProb = node.append('g').data(root.descendants()).join('g');
 
         nodeProb
             .filter((d: NodeData) => d.data.probability !== undefined)
             .append('text')
-            .text((d: NodeData) => `${(d.data.probability * 10000) / 100}%`)
+            .text((d: NodeData) => `${(d.data.probability! * 10000) / 100}%`)
             .attr('dy', '0.9rem')
             .attr('x', -35)
             .attr('font-family', 'Source Sans Pro')
@@ -172,7 +183,19 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
             .attr('font-size', 14)
             .attr('text-anchor', 'end');
 
-        console.log(svg.node());
+        nodeValue
+            .filter((d: NodeData) => d.data.expectedValue !== undefined)
+            .append('text')
+            .text((d: NodeData) => `VEM: ${d.data.expectedValue}`)
+            .attr('dy', (d) => {
+                if (d.data.label === 'root') return '0.2rem';
+                if (d.data.probability === undefined) return '1rem';
+                return '1.85rem';
+            })
+            .attr('x', -35)
+            .attr('font-family', 'Source Sans Pro')
+            .attr('font-size', 14)
+            .attr('text-anchor', 'end');
 
         if (svgRef && svgRef.current) {
             const bbox = svgRef.current.getBBox();
@@ -182,11 +205,11 @@ const TreeGraph: React.FC<TreeGraphProps> = ({ tree, showNodeContextMenu }) => {
                 Math.max(width - 10, bbox.width + 100),
                 Math.max(height, bbox.height + 280),
             ]);
-            console.log(bbox);
+            // console.log(bbox);
 
             g.attr('transform', `translate(${100},${-bbox.y + 20})`);
         }
-    }, [tree]);
+    }, [tree, isOptimalTree]);
 
     return (
         <div ref={divRef} className="overflow-visible h-full">

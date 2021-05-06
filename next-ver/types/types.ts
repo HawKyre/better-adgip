@@ -1,8 +1,26 @@
-import { DNode } from '../decision-trees/DTree';
+import { AnimationControls } from 'framer-motion';
+import { Dispatch, SetStateAction } from 'react';
+import { DNode, DTree } from '../decision-trees/DTree';
 import { ContextElement } from './props';
 
-export interface IDNodeData extends IDNode {
+export interface IDNodeData {
     type: string;
+
+    value: number;
+
+    label: string;
+
+    probability: number | undefined;
+
+    children: IDNodeData[];
+
+    isParentRandomNode: boolean;
+
+    nodeID: number;
+
+    isBranchGood?: boolean;
+
+    expectedValue?: number;
 }
 
 export type NodeData = d3.HierarchyPointNode<IDNodeData>;
@@ -25,9 +43,6 @@ export interface IDNode {
     // Whether the parent is a random node
     isParentRandomNode: boolean;
 
-    // Represents the value to be obtained by choosing the optimum path through the children
-    expectedValue: number;
-
     // Unique ID for the node
     nodeID: number;
 
@@ -43,12 +58,18 @@ export interface IDNode {
 
     removeChild: (nodeID: number) => boolean;
 
-    calculate: () => number;
+    getOptimalTree: () => IDNodeData;
 
-    getChildrenData: (isParentRandom: boolean) => object;
+    getChildrenData: () => IDNodeData;
+
+    isValidTree: () => boolean;
 }
 
-export interface GraphContainerProps {}
+export interface GraphContainerProps {
+    tree: DTree;
+    setTree: Dispatch<SetStateAction<DTree>>;
+    showVEMTree: boolean;
+}
 
 export interface ContextData {
     items: ContextElement[];
@@ -61,4 +82,11 @@ export interface PopupData {
     visible: boolean;
     text: string;
     onSetValue: (n: any) => void;
+}
+
+export interface ToolbarProps {
+    varTabControl: AnimationControls;
+    tree: DTree;
+    showVEMTree: boolean;
+    setShowVEMTree: Dispatch<SetStateAction<boolean>>;
 }

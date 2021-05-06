@@ -18,9 +18,13 @@ import NodeContextMenu from './NodeContextMenu';
 import TreeGraph from './TreeGraph';
 import ValueUpdate from './UpdatePopup';
 
-const GraphContainer: React.FC<GraphContainerProps> = () => {
+const GraphContainer: React.FC<GraphContainerProps> = ({
+    setTree,
+    tree,
+    showVEMTree,
+}) => {
     const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
-    const [tree, setTree] = useState<DTree>(getExampleTree());
+
     const [popupData, setPopupData] = useState<PopupData>({
         visible: false,
         text: '',
@@ -91,7 +95,11 @@ const GraphContainer: React.FC<GraphContainerProps> = () => {
 
     return (
         <div className="">
-            <TreeGraph tree={tree} showNodeContextMenu={showNodeContextMenu} />
+            <TreeGraph
+                tree={tree}
+                showNodeContextMenu={showNodeContextMenu}
+                isOptimalTree={showVEMTree}
+            />
             <NodeContextMenu
                 items={contextData.items}
                 visible={contextData.visible}

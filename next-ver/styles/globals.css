@@ -5,7 +5,7 @@
 
 @layer utilities {
     .drop-shadow-icon {
-        filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.25));
+        filter: drop-shadow(0 3px 5px #6ee7b733);
     }
 }
 

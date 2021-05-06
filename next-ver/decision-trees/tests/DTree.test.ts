@@ -23,7 +23,6 @@ test('Create a small tree', () => {
         let n = new ResultNode('Rand' + i, i * 10 + 10);
         tree.insertNode(0, n);
     }
-    // console.log(tree.getTreeData());
     expect(tree.getTreeData()).toStrictEqual({
         name: 'root',
         nodeID: 0,
@@ -43,7 +42,6 @@ test('Verify large children count', () => {
         let n = new ResultNode('Rand' + i, i * 10 + 10);
         tree.insertNode(0, n);
     }
-    // console.log(tree.getTreeData().children.size);
     expect(tree.getTreeData().children.length).toBe(200);
 });
 
@@ -58,7 +56,6 @@ test('Adding nested children', () => {
         let n = new ResultNode('Rand' + i, i * 21);
         tree.insertNode(i, n);
     }
-    // console.log(JSON.stringify(tree.getTreeData(), null, 2));
 
     expect(
         tree.getTreeData().children.every((x) => x.children.length == 1)

@@ -1,21 +1,13 @@
-import { IDNode } from '../types/types';
+import { IDNode, IDNodeData } from '../types/types';
 
 export class DTree {
-    parentNode: DNode;
-    nodeCounter: number;
+    private parentNode: DNode;
+    private nodeCounter: number;
 
     constructor() {
         this.nodeCounter = 0;
         this.parentNode = new DecisionNode('root', this.nodeCounter);
         this.parentNode.nodeID = 0;
-    }
-
-    getExpectedValue(): number {
-        return this.parentNode.calculate();
-    }
-
-    getTreeData(): object {
-        return this.parentNode.getChildrenData();
     }
 
     insertNode(parentID: number, node: DNode): void {
@@ -39,6 +31,18 @@ export class DTree {
         this.parentNode.switchType(nodeID, nodeType);
         this.insertNode(nodeID, new ResultNode(''));
         this.insertNode(nodeID, new ResultNode(''));
+    }
+
+    isValidTree(): boolean {
+        return this.parentNode.isValidTree();
+    }
+
+    getDataTree(): IDNodeData {
+        return this.parentNode.getChildrenData();
+    }
+
+    getOptimalTree(): IDNodeData {
+        return this.parentNode.getOptimalTree();
     }
 }
 
@@ -76,21 +80,21 @@ export class DNode implements IDNode {
 
     children: DNode[];
 
-    expectedValue: number;
-
     nodeID: number;
 
     isParentRandomNode: boolean;
 
-    constructor(label: string, value = 0, prob = undefined) {
+    constructor(
+        label: string,
+        value = 0,
+        prob: number | undefined = undefined
+    ) {
         this.value = value;
         this.label = label;
         this.nodeID = -1;
         this.probability = prob;
         this.children = [];
         this.isParentRandomNode = false;
-
-        this.expectedValue = -1;
     }
 
     getChildren() {
@@ -135,8 +139,6 @@ export class DNode implements IDNode {
 
     removeChild(nodeID: number): boolean {
         const childIndex = this.children.findIndex((n) => {
-            console.log(n.nodeID + ' - ' + nodeID);
-
             return n.nodeID === nodeID;
         });
 
@@ -165,18 +167,16 @@ export class DNode implements IDNode {
         }
     }
 
-    calculate(): number {
+    getOptimalTree(): IDNodeData {
         throw new Error('Not implemented.');
     }
 
-    getChildrenData(): object {
+    getChildrenData(): IDNodeData {
         throw new Error('Not implemented.');
     }
 
     switchType(nodeID: number, nodeType: string): void {
         const childIndex = this.children.findIndex((n) => {
-            console.log(n.nodeID + ' - ' + nodeID);
-
             return n.nodeID === nodeID;
         });
 
@@ -190,8 +190,6 @@ export class DNode implements IDNode {
             const childID = this.children[childIndex].nodeID;
 
             if (nodeType === 'DEC') {
-                console.log('Chaning to decision');
-
                 this.children[
                     childIndex
                 ] = ResultNode.prototype.convertToDecisionNode.call(
@@ -208,13 +206,27 @@ export class DNode implements IDNode {
             this.children.forEach((n) => n.switchType(nodeID, nodeType));
         }
     }
+
+    isValidTree(): boolean {
+        if (this instanceof RandomNode) {
+            let accProb = 0;
+            this.children.forEach((x) => {
+                if (!x.probability || x.probability < 0 || x.probability > 1)
+                    return false;
+
+                accProb += x.probability;
+            });
+
+            if (Math.abs(accProb - 1) > 0.001) return false;
+        }
+        let valid = true;
+        this.children.forEach((n) => (valid = valid && n.isValidTree()));
+        return valid;
+    }
 }
 
 export class DecisionNode extends DNode {
-    // The child through which you get the best value
-    optimumChild: DNode[] | null;
-
-    getChildrenData(): object {
+    getChildrenData(): IDNodeData {
         return {
             label: this.label,
             nodeID: this.nodeID,
@@ -226,28 +238,44 @@ export class DecisionNode extends DNode {
         };
     }
 
-    calculate(): number {
-        this.expectedValue = 0;
-        this.optimumChild = [];
+    getOptimalTree(): IDNodeData {
+        let expectedValue = -Infinity;
+        let optimumChild: number[] = [];
 
-        for (let i = 0; i < this.children.length; i++) {
-            const child = this.children[i];
-            const childValue = child.calculate();
+        this.children.forEach((child, i) => {
+            const childTree = child.getOptimalTree();
 
-            if (this.expectedValue == childValue) {
-                this.optimumChild.push(child);
-            } else if (this.expectedValue < childValue) {
-                this.optimumChild = [child];
-                this.expectedValue = childValue;
+            if (expectedValue === childTree.expectedValue) {
+                optimumChild.push(i);
+            } else if (childTree.value > expectedValue) {
+                optimumChild = [i];
+                expectedValue = childTree.expectedValue!;
             }
-        }
+        });
 
-        return this.expectedValue;
+        return {
+            label: this.label,
+            nodeID: this.nodeID,
+            value: this.value,
+            type: 'DEC',
+            isParentRandomNode: this.isParentRandomNode,
+            probability: this.probability,
+            expectedValue: expectedValue + this.value,
+            children: this.children.map((x, i) => {
+                let childData = x.getOptimalTree();
+                if (optimumChild.includes(i)) {
+                    childData.isBranchGood = true;
+                } else {
+                    childData.isBranchGood = false;
+                }
+                return childData;
+            }),
+        };
     }
 }
 
 export class RandomNode extends DNode {
-    getChildrenData(): object {
+    getChildrenData(): IDNodeData {
         return {
             label: this.label,
             nodeID: this.nodeID,
@@ -259,25 +287,42 @@ export class RandomNode extends DNode {
         };
     }
 
-    calculate(): number {
-        this.expectedValue = 0;
+    getOptimalTree(): IDNodeData {
+        let expectedValue = 0;
 
         for (let i = 0; i < this.children.length; i++) {
             const child = this.children[i];
-            const childValue = child.calculate();
+            const childValue = child.getOptimalTree();
 
             if (!child.probability)
-                throw new Error("Child doesn't have an assigned probability");
+                throw new Error(
+                    "This shouldn't happen since I've checked it before, so please."
+                );
 
-            this.expectedValue += child.probability * childValue;
+            if (childValue.expectedValue) {
+                expectedValue += child.probability * childValue.expectedValue;
+            } else {
+                throw new Error(
+                    'For some reason this expected value is not set.'
+                );
+            }
         }
 
-        return this.expectedValue;
+        return {
+            label: this.label,
+            nodeID: this.nodeID,
+            value: this.value,
+            type: 'RND',
+            isParentRandomNode: this.isParentRandomNode,
+            probability: this.probability,
+            children: this.children.map((x) => x.getOptimalTree()),
+            expectedValue: expectedValue + this.value,
+        };
     }
 }
 
 export class ResultNode extends DNode {
-    getChildrenData(): object {
+    getChildrenData(): IDNodeData {
         return {
             label: this.label,
             nodeID: this.nodeID,
@@ -285,12 +330,21 @@ export class ResultNode extends DNode {
             type: 'RES',
             isParentRandomNode: this.isParentRandomNode,
             probability: this.probability,
+            children: [],
         };
     }
 
-    calculate(): number {
-        this.expectedValue = this.value;
-        return this.expectedValue;
+    getOptimalTree(): IDNodeData {
+        return {
+            label: this.label,
+            nodeID: this.nodeID,
+            value: this.value,
+            type: 'RES',
+            isParentRandomNode: this.isParentRandomNode,
+            probability: this.probability,
+            children: [],
+            expectedValue: this.value,
+        };
     }
 
     convertToRandomNode(): RandomNode {

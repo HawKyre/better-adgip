@@ -1,14 +1,17 @@
 import { FaCalculator, FaClipboardList, FaCog } from 'react-icons/fa';
-import { AnimationControls, motion, useAnimation } from 'framer-motion';
-import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
+import { motion, useAnimation } from 'framer-motion';
+import { useState } from 'react';
+import { ToolbarProps } from '../../types/types';
 
-interface ToolbarProps {
-    varTabControl: AnimationControls;
-}
-
-const Toolbar: React.FC<ToolbarProps> = ({ varTabControl }) => {
+const Toolbar: React.FC<ToolbarProps> = ({
+    varTabControl,
+    tree,
+    showVEMTree,
+    setShowVEMTree,
+}) => {
     const showToolbarControls = useAnimation();
     const clipboardControl = useAnimation();
+    const calculatorControl = useAnimation();
     const [varState, setVarState] = useState(false);
 
     const handleAnimation = (e) => {
@@ -32,12 +35,27 @@ const Toolbar: React.FC<ToolbarProps> = ({ varTabControl }) => {
         });
 
         clipboardControl.start({
-            color: varState ? '#660096' : '#000',
+            color: varState ? '#6EE7B7' : '#000',
             transition: {
                 duration: 0.3,
             },
         });
         setVarState((v) => !v);
+    };
+
+    const handleCalculate = () => {
+        if (tree.isValidTree()) {
+            calculatorControl.start({
+                color: !showVEMTree ? '#6EE7B7' : '#000',
+                transition: {
+                    duration: 0.3,
+                },
+            });
+            setShowVEMTree((x) => !x);
+            console.log(showVEMTree);
+        } else {
+            console.error('Tree is not valid.');
+        }
     };
 
     return (
@@ -49,7 +67,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ varTabControl }) => {
                 onMouseEnter={handleAnimation}
                 onMouseLeave={handleAnimation}
             >
-                <FaCalculator className="cursor-pointer mr-4 text-5xl filter drop-shadow-icon" />
+                <motion.div animate={calculatorControl}>
+                    <FaCalculator
+                        className="cursor-pointer mr-4 text-5xl filter drop-shadow-icon"
+                        onClick={handleCalculate}
+                    />
+                </motion.div>
                 <FaCog className="cursor-pointer mr-4 text-5xl filter drop-shadow-icon" />
                 <motion.div animate={clipboardControl}>
                     <FaClipboardList
