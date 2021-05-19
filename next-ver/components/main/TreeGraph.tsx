@@ -6,18 +6,20 @@ import {
 } from '../../decision-trees/DTree';
 import * as d3 from 'd3';
 import { useEffect, useRef, useState } from 'react';
-import { NodeData } from '../../types/types';
+import { NodeData, VisualizationSettings } from '../../types/types';
 
 interface TreeGraphProps {
     tree: DTree;
     showNodeContextMenu: any;
     isOptimalTree: boolean;
+    settings: VisualizationSettings;
 }
 
 const TreeGraph: React.FC<TreeGraphProps> = ({
     tree,
     showNodeContextMenu,
     isOptimalTree,
+    settings,
 }) => {
     const divRef = useRef();
     const svgRef = useRef();
@@ -30,8 +32,8 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
 
         const width = window.innerWidth;
         const height = window.innerHeight;
-        const root_dx = 95;
-        const root_dy = 400;
+        const root_dx = settings.rootDx;
+        const root_dy = settings.rootDy;
 
         let d3tree = (data: object) => {
             const root = d3.hierarchy(data);
@@ -50,8 +52,8 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
             if (d.x > x1) x1 = d.x;
             if (d.x < x0) x0 = d.x;
         });
-        const spacing = 1;
-        const widthScale = 0.5;
+        const spacing = settings.spacing;
+        const widthScale = settings.widthScale;
 
         const svg = d3
             .select(svgRef.current)
@@ -63,12 +65,12 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
             .attr('font-family', 'sans-serif')
             .attr('font-size', 10);
 
-        const diagonalPercent = 0.2;
+        const diagonalPercent = settings.diagonalPercent;
         const link = g
             .append('g')
             .attr('fill', 'none')
-            .attr('stroke-opacity', 0.4)
-            .attr('stroke-width', 2)
+            // .attr('stroke-opacity', 0.4)
+            // .attr('stroke-width', 2)
             .selectAll('path')
             .data(root.links())
             .join('path')
@@ -83,13 +85,34 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
                     widthScale
                 }`;
             })
-            .attr('class', (d) => {
+            // .attr('class', (d) => {
+            //     if (!isOptimalTree) {
+            //         return 'stroke-current text-gray-800';
+            //     } else if (d.target.data.isBranchGood) {
+            //         return 'stroke-current text-black';
+            //     } else {
+            //         return 'stroke-current text-gray-200';
+            //     }
+            // })
+            .attr('style', (d) => {
                 if (!isOptimalTree) {
-                    return 'stroke-current text-gray-800';
+                    return `stroke: currentColor; stroke-width: ${
+                        settings.normalStroke.width
+                    }; opacity: ${
+                        settings.normalStroke.color.opacity
+                    }; color: ${settings.normalStroke.color.formatHex()};`;
                 } else if (d.target.data.isBranchGood) {
-                    return 'stroke-current text-black';
+                    return `stroke: currentColor; stroke-width: ${
+                        settings.goodPathStroke.width
+                    }; opacity: ${
+                        settings.goodPathStroke.color.opacity
+                    }; color: ${settings.goodPathStroke.color.formatHex()};`;
                 } else {
-                    return 'stroke-current text-gray-200';
+                    return `stroke: currentColor; stroke-width: ${
+                        settings.badPathStroke.width
+                    }; opacity: ${
+                        settings.badPathStroke.color.opacity
+                    }; color: ${settings.badPathStroke.color.formatHex()};`;
                 }
             });
         // .attr("d", d3.linkHorizontal()
@@ -99,7 +122,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
         const node = g
             .append('g')
             .attr('stroke-linejoin', 'round')
-            .attr('stroke-width', 3)
+            // .attr('stroke-width', 3)
             .selectAll('g')
             .data(root.descendants())
             .join('g')
@@ -109,16 +132,16 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
             )
             .on('contextmenu', showNodeContextMenu);
 
-        const scale = 3;
+        const scale = settings.nodeScale;
         node.append('path')
             .attr(
                 'd',
                 d3
                     .symbol()
                     .size((d: NodeData) => {
-                        if (d.data.type === 'DEC') return 1000 * scale;
-                        if (d.data.type === 'RND') return 1000 * scale;
-                        if (d.data.type === 'RES') return 600 * scale;
+                        if (d.data.type === 'DEC') return 3000 * scale;
+                        if (d.data.type === 'RND') return 3000 * scale;
+                        if (d.data.type === 'RES') return 1800 * scale;
                         throw new Error('Unrecognized node type.');
                     })
                     .type((d: NodeData) => {
@@ -146,7 +169,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
             .append('text')
             .text((d: NodeData) => d.data.label)
             .attr('font-family', 'Source Sans Pro')
-            .attr('font-size', 14)
+            .attr('font-size', settings.fontSize)
             .attr('dy', '-0.4rem')
             .attr('x', -35)
             .attr('text-anchor', 'end');
@@ -163,7 +186,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
             .attr('dy', '0.9rem')
             .attr('x', -35)
             .attr('font-family', 'Source Sans Pro')
-            .attr('font-size', 14)
+            .attr('font-size', settings.fontSize)
             .attr('text-anchor', 'end');
 
         let nodeValue = node.append('g').data(root.descendants()).join('g');
@@ -180,7 +203,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
             .attr('dy', '-1.4rem')
             .attr('x', -35)
             .attr('font-family', 'Source Sans Pro')
-            .attr('font-size', 14)
+            .attr('font-size', settings.fontSize)
             .attr('text-anchor', 'end');
 
         nodeValue
@@ -194,7 +217,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
             })
             .attr('x', -35)
             .attr('font-family', 'Source Sans Pro')
-            .attr('font-size', 14)
+            .attr('font-size', settings.fontSize)
             .attr('text-anchor', 'end');
 
         if (svgRef && svgRef.current) {
@@ -209,7 +232,7 @@ const TreeGraph: React.FC<TreeGraphProps> = ({
 
             g.attr('transform', `translate(${100},${-bbox.y + 20})`);
         }
-    }, [tree, isOptimalTree]);
+    }, [tree, isOptimalTree, settings]);
 
     return (
         <div ref={divRef} className="overflow-visible h-full">

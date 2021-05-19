@@ -22,6 +22,7 @@ const GraphContainer: React.FC<GraphContainerProps> = ({
     setTree,
     tree,
     showVEMTree,
+    visualizationSettings,
 }) => {
     const inputRef = useRef() as React.MutableRefObject<HTMLInputElement>;
 
@@ -99,6 +100,7 @@ const GraphContainer: React.FC<GraphContainerProps> = ({
                 tree={tree}
                 showNodeContextMenu={showNodeContextMenu}
                 isOptimalTree={showVEMTree}
+                settings={visualizationSettings}
             />
             <NodeContextMenu
                 items={contextData.items}

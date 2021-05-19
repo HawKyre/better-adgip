@@ -1,10 +1,11 @@
 import { FaCalculator, FaClipboardList, FaCog } from 'react-icons/fa';
-import { motion, useAnimation } from 'framer-motion';
+import { AnimationControls, motion, useAnimation } from 'framer-motion';
 import { useState } from 'react';
 import { ToolbarProps } from '../../types/types';
 
 const Toolbar: React.FC<ToolbarProps> = ({
     varTabControl,
+    visTabControl,
     tree,
     showVEMTree,
     setShowVEMTree,
@@ -12,7 +13,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
     const showToolbarControls = useAnimation();
     const clipboardControl = useAnimation();
     const calculatorControl = useAnimation();
-    const [varState, setVarState] = useState(false);
+    const [rightTabState, setRightTabState] = useState<AnimationControls>();
 
     const handleAnimation = (e) => {
         if (e._reactName === 'onMouseEnter') {
@@ -26,21 +27,34 @@ const Toolbar: React.FC<ToolbarProps> = ({
         }
     };
 
-    const handleVarAnimation = (e) => {
-        varTabControl.start({
-            x: varState ? 0 : '24rem',
-            transition: {
-                duration: 0.3,
-            },
-        });
+    const handleRightTabAnimation = (animControl: AnimationControls) => {
+        if (rightTabState) {
+            if (rightTabState === animControl) {
+                rightTabState.start({
+                    x: '32rem',
+                    transition: {
+                        duration: 0.3,
+                    },
+                });
+                setRightTabState(undefined);
+                return;
+            } else {
+                rightTabState.start({
+                    x: '32rem',
+                    transition: {
+                        duration: 0.3,
+                    },
+                });
+            }
+        }
 
-        clipboardControl.start({
-            color: varState ? '#6EE7B7' : '#000',
+        animControl.start({
+            x: 0,
             transition: {
                 duration: 0.3,
             },
         });
-        setVarState((v) => !v);
+        setRightTabState(animControl);
     };
 
     const handleCalculate = () => {
@@ -73,10 +87,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
                         onClick={handleCalculate}
                     />
                 </motion.div>
-                <FaCog className="cursor-pointer mr-4 text-5xl filter drop-shadow-icon" />
+                <FaCog
+                    onClick={() => handleRightTabAnimation(visTabControl)}
+                    className="cursor-pointer mr-4 text-5xl filter drop-shadow-icon"
+                />
                 <motion.div animate={clipboardControl}>
                     <FaClipboardList
-                        onClick={handleVarAnimation}
+                        onClick={() => handleRightTabAnimation(varTabControl)}
                         className={`cursor-pointer text-5xl filter drop-shadow-icon`}
                     />
                 </motion.div>

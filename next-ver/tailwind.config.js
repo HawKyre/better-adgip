@@ -6,12 +6,14 @@ module.exports = {
 
     darkMode: false, // or 'media' or 'class'
     theme: {
-        extend: {},
+        extend: {
+            spacing: {
+                120: '30rem',
+            },
+        },
     },
     variants: {
         extend: {},
     },
-    plugins: [
-        require('tailwindcss-textshadow')
-    ],
+    plugins: [require('tailwindcss-textshadow')],
 };

@@ -1,3 +1,4 @@
+import { RGBColor } from 'd3-color';
 import { AnimationControls } from 'framer-motion';
 import { Dispatch, SetStateAction } from 'react';
 import { DNode, DTree } from '../decision-trees/DTree';
@@ -69,6 +70,7 @@ export interface GraphContainerProps {
     tree: DTree;
     setTree: Dispatch<SetStateAction<DTree>>;
     showVEMTree: boolean;
+    visualizationSettings: VisualizationSettings;
 }
 
 export interface ContextData {
@@ -86,7 +88,33 @@ export interface PopupData {
 
 export interface ToolbarProps {
     varTabControl: AnimationControls;
+    visTabControl: AnimationControls;
     tree: DTree;
     showVEMTree: boolean;
     setShowVEMTree: Dispatch<SetStateAction<boolean>>;
+}
+
+export interface StrokeOptions {
+    width: number;
+    color: RGBColor;
+}
+
+export interface VisualizationSettings {
+    [state: string]: number | StrokeOptions;
+    rootDx: number;
+    rootDy: number;
+    spacing: number;
+    widthScale: number;
+    diagonalPercent: number;
+    nodeScale: number;
+    fontSize: number;
+    normalStroke: StrokeOptions;
+    goodPathStroke: StrokeOptions;
+    badPathStroke: StrokeOptions;
+}
+
+export interface VisualizationOptionsProps {
+    visTabOptions: AnimationControls;
+    vs: VisualizationSettings;
+    setVS: Dispatch<SetStateAction<VisualizationSettings>>;
 }
